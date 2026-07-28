@@ -10,8 +10,9 @@ import type { WorldStorage } from './storage';
 // - assets/*.glb
 // - timeline.json
 // - agents.json
+// - ydoc.bin (optional, Yjs binary state)
 
-export async function exportIRME(storage: WorldStorage, includeBlobs = true): Promise<Blob> {
+export async function exportIRME(storage: WorldStorage, includeBlobs = true, ydocBinary?: Uint8Array): Promise<Blob> {
   const zip = new JSZip();
   const bundle = await storage.exportBundle(includeBlobs);
 
@@ -37,6 +38,10 @@ export async function exportIRME(storage: WorldStorage, includeBlobs = true): Pr
 
   zip.file('timeline.json', JSON.stringify(bundle.timeline || [], null, 2));
   zip.file('agents.json', JSON.stringify(bundle.agents || [], null, 2));
+
+  if (ydocBinary) {
+    zip.file('ydoc.bin', ydocBinary);
+  }
 
   const content = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
   return content;
